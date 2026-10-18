@@ -1,13 +1,15 @@
 package com.example.s8wallpaper;
 
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
+import android.graphics.Paint;
+import android.graphics.Shader;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
 import android.os.Handler;
 import android.os.Looper;
 import android.service.wallpaper.WallpaperService;
@@ -40,9 +42,8 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            // Telefonun duruş açısına göre yumuşatılmış ivme değeri
-            gravityX = -event.values[0] * 0.4f;
-            gravityY = event.values[1] * 0.4f;
+            gravityX = -event.values[0] * 0.5f;
+            gravityY = event.values[1] * 0.5f;
         }
     }
 
@@ -68,7 +69,7 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
         public void onCreate(SurfaceHolder surfaceHolder) {
             super.onCreate(surfaceHolder);
             setTouchEventsEnabled(true);
-            for (int i = 0; i < 140; i++) {
+            for (int i = 0; i < 160; i++) {
                 particles.add(new Particle());
             }
         }
@@ -124,21 +125,25 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
             try {
                 canvas = holder.lockCanvas();
                 if (canvas != null) {
-                    // Derin S8 AMOLED Arka Planı
-                    canvas.drawColor(Color.parseColor("#04060E"));
-
                     int width = canvas.getWidth();
                     int height = canvas.getHeight();
 
-                    Paint paint = new Paint();
-                    paint.setAntiAlias(true);
+                    // S8 Degrade Arka Planı
+                    Paint bgPaint = new Paint();
+                    int[] bgColors = getBgGradientColors(currentTheme);
+                    Shader gradient = new LinearGradient(0, 0, 0, height, bgColors[0], bgColors[1], Shader.TileMode.CLAMP);
+                    bgPaint.setShader(gradient);
+                    canvas.drawRect(0, 0, width, height, bgPaint);
+
+                    Paint particlePaint = new Paint();
+                    particlePaint.setAntiAlias(true);
 
                     for (Particle p : particles) {
                         p.update(width, height, touchX, touchY, gravityX, gravityY);
 
-                        paint.setColor(p.color);
-                        paint.setAlpha(p.alpha);
-                        canvas.drawCircle(p.x, p.y, p.radius, paint);
+                        particlePaint.setColor(p.color);
+                        particlePaint.setAlpha(p.alpha);
+                        canvas.drawCircle(p.x, p.y, p.radius, particlePaint);
                     }
                 }
             } finally {
@@ -153,6 +158,23 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
             }
         }
 
+        private int[] getBgGradientColors(int theme) {
+            switch (theme) {
+                case 0: // Orchid Gray
+                    return new int[]{Color.parseColor("#1B1A2C"), Color.parseColor("#483D59")};
+                case 1: // Maple Gold
+                    return new int[]{Color.parseColor("#1D180C"), Color.parseColor("#4A3B18")};
+                case 2: // Midnight Black
+                    return new int[]{Color.parseColor("#050508"), Color.parseColor("#181920")};
+                case 3: // Coral Blue
+                    return new int[]{Color.parseColor("#0A1B2A"), Color.parseColor("#1A3B5C")};
+                case 4: // Rose Pink
+                    return new int[]{Color.parseColor("#2B151D"), Color.parseColor("#532738")};
+                default:
+                    return new int[]{Color.parseColor("#050814"), Color.parseColor("#101828")};
+            }
+        }
+
         private class Particle {
             float x, y, speedX, speedY, radius;
             int alpha, color;
@@ -163,39 +185,43 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
 
             void updateColorTheme(int theme) {
                 int[][] themeColors = {
-                    {Color.parseColor("#00E5FF"), Color.parseColor("#7C4DFF"), Color.parseColor("#18FFFF")}, // Arctic / Orchid
-                    {Color.parseColor("#FFD700"), Color.parseColor("#FF8C00"), Color.parseColor("#FFE082")}, // Gold
-                    {Color.parseColor("#FFFFFF"), Color.parseColor("#B0BEC5"), Color.parseColor("#ECEFF1")}, // Midnight Black
-                    {Color.parseColor("#0288D1"), Color.parseColor("#00BCD4"), Color.parseColor("#80DEEA")}, // Coral Blue
-                    {Color.parseColor("#FF4081"), Color.parseColor("#F48FB1"), Color.parseColor("#FF80AB")}  // Rose Pink
+                    {Color.parseColor("#D8BFD8"), Color.parseColor("#E6E6FA"), Color.parseColor("#9370DB")}, // Orchid
+                    {Color.parseColor("#FFE082"), Color.parseColor("#FFD54F"), Color.parseColor("#FFCA28")}, // Gold
+                    {Color.parseColor("#FFFFFF"), Color.parseColor("#ECEFF1"), Color.parseColor("#CFD8DC")}, // Midnight
+                    {Color.parseColor("#80DEEA"), Color.parseColor("#4DD0E1"), Color.parseColor("#00E5FF")}, // Coral Blue
+                    {Color.parseColor("#F8BBD0"), Color.parseColor("#F48FB1"), Color.parseColor("#FF80AB")}  // Rose Pink
                 };
                 int[] selectedPalette = themeColors[Math.min(theme, 4)];
                 color = selectedPalette[random.nextInt(selectedPalette.length)];
             }
 
             void reset(int width, int height) {
+                // Parçacıkların %70'ini ekranın orta bandında kümele (S8 Orijinal Efekti)
                 x = random.nextFloat() * width;
-                y = random.nextFloat() * height;
-                speedX = (random.nextFloat() - 0.5f) * 1.2f;
-                speedY = (random.nextFloat() - 0.8f) * 1.8f;
-                radius = random.nextFloat() * 4.5f + 2.0f;
-                alpha = random.nextInt(180) + 75;
+                if (random.nextBoolean()) {
+                    y = (height * 0.25f) + (random.nextFloat() * (height * 0.5f));
+                } else {
+                    y = random.nextFloat() * height;
+                }
+                
+                speedX = (random.nextFloat() - 0.5f) * 1.0f;
+                speedY = (random.nextFloat() - 0.8f) * 1.5f;
+                radius = random.nextFloat() * 4.0f + 1.5f;
+                alpha = random.nextInt(160) + 80;
                 updateColorTheme(currentTheme);
             }
 
             void update(int width, int height, float tx, float ty, float gx, float gy) {
-                // Jiroskop / Eğim kuvveti + Normal hareket
                 x += speedX + gx;
                 y += speedY + gy;
 
-                // Dokunmatik çekim efekti
                 if (tx != -1 && ty != -1) {
                     float dx = tx - x;
                     float dy = ty - y;
                     float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 320) {
-                        x += (dx / dist) * 2.5f;
-                        y += (dy / dist) * 2.5f;
+                    if (dist < 350) {
+                        x += (dx / dist) * 3.0f;
+                        y += (dy / dist) * 3.0f;
                     }
                 }
 
