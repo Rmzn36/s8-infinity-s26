@@ -4,8 +4,10 @@
     <uses-feature android:name="android.software.live_wallpaper" android:required="true" />
     <uses-feature android:name="android.hardware.sensor.accelerometer" android:required="false" />
 
+    <uses-permission android:name="android.permission.SET_WALLPAPER" />
+
     <application
-        android:label="S8 Infinity Wallpaper"
+        android:label="S8 Infinity &amp; Stock Wallpapers"
         android:supportsRtl="true"
         android:theme="@android:style/Theme.Material.Light">
 
@@ -24,7 +26,7 @@
 
         <activity
             android:name=".SettingsActivity"
-            android:label="S8 Wallpaper Teması"
+            android:label="S8 Wallpapers &amp; Galeri"
             android:exported="true" />
 
     </application>
