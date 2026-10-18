@@ -42,8 +42,8 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
-            gravityX = -event.values[0] * 0.5f;
-            gravityY = event.values[1] * 0.5f;
+            gravityX = -event.values[0] * 0.4f;
+            gravityY = event.values[1] * 0.4f;
         }
     }
 
@@ -69,7 +69,7 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
         public void onCreate(SurfaceHolder surfaceHolder) {
             super.onCreate(surfaceHolder);
             setTouchEventsEnabled(true);
-            for (int i = 0; i < 160; i++) {
+            for (int i = 0; i < 150; i++) {
                 particles.add(new Particle());
             }
         }
@@ -185,29 +185,23 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
 
             void updateColorTheme(int theme) {
                 int[][] themeColors = {
-                    {Color.parseColor("#D8BFD8"), Color.parseColor("#E6E6FA"), Color.parseColor("#9370DB")}, // Orchid
-                    {Color.parseColor("#FFE082"), Color.parseColor("#FFD54F"), Color.parseColor("#FFCA28")}, // Gold
-                    {Color.parseColor("#FFFFFF"), Color.parseColor("#ECEFF1"), Color.parseColor("#CFD8DC")}, // Midnight
-                    {Color.parseColor("#80DEEA"), Color.parseColor("#4DD0E1"), Color.parseColor("#00E5FF")}, // Coral Blue
-                    {Color.parseColor("#F8BBD0"), Color.parseColor("#F48FB1"), Color.parseColor("#FF80AB")}  // Rose Pink
+                    {Color.parseColor("#D8BFD8"), Color.parseColor("#E6E6FA"), Color.parseColor("#9370DB")},
+                    {Color.parseColor("#FFE082"), Color.parseColor("#FFD54F"), Color.parseColor("#FFCA28")},
+                    {Color.parseColor("#FFFFFF"), Color.parseColor("#ECEFF1"), Color.parseColor("#CFD8DC")},
+                    {Color.parseColor("#80DEEA"), Color.parseColor("#4DD0E1"), Color.parseColor("#00E5FF")},
+                    {Color.parseColor("#F8BBD0"), Color.parseColor("#F48FB1"), Color.parseColor("#FF80AB")}
                 };
                 int[] selectedPalette = themeColors[Math.min(theme, 4)];
                 color = selectedPalette[random.nextInt(selectedPalette.length)];
             }
 
             void reset(int width, int height) {
-                // Parçacıkların %70'ini ekranın orta bandında kümele (S8 Orijinal Efekti)
                 x = random.nextFloat() * width;
-                if (random.nextBoolean()) {
-                    y = (height * 0.25f) + (random.nextFloat() * (height * 0.5f));
-                } else {
-                    y = random.nextFloat() * height;
-                }
-                
-                speedX = (random.nextFloat() - 0.5f) * 1.0f;
-                speedY = (random.nextFloat() - 0.8f) * 1.5f;
-                radius = random.nextFloat() * 4.0f + 1.5f;
-                alpha = random.nextInt(160) + 80;
+                y = (height * 0.2f) + (random.nextFloat() * (height * 0.6f));
+                speedX = (random.nextFloat() - 0.5f) * 0.8f;
+                speedY = (random.nextFloat() - 0.8f) * 1.2f;
+                radius = random.nextFloat() * 3.5f + 1.5f;
+                alpha = random.nextInt(140) + 60;
                 updateColorTheme(currentTheme);
             }
 
@@ -219,9 +213,9 @@ public class LiveWallpaperService extends WallpaperService implements SensorEven
                     float dx = tx - x;
                     float dy = ty - y;
                     float dist = (float) Math.sqrt(dx * dx + dy * dy);
-                    if (dist < 350) {
-                        x += (dx / dist) * 3.0f;
-                        y += (dy / dist) * 3.0f;
+                    if (dist < 300) {
+                        x += (dx / dist) * 2.5f;
+                        y += (dy / dist) * 2.5f;
                     }
                 }
 
