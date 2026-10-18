@@ -26,16 +26,17 @@ public class SettingsActivity extends Activity {
 
         ListView listView = new ListView(this);
         String[] menuItems = {
-            "--- CANLI TEMA SEÇİMİ (Jiroskoplu) ---",
-            "1. Orchid Gray / Arctic Silver (Mavi & Mor)",
+            "--- S8 CANLI INFINITY TEMALARI (120Hz & Jiroskop) ---",
+            "1. Orchid Gray / Arctic Silver (Mor & Gümüş - Videodaki)",
             "2. Maple Gold (Altın & Kehribar)",
-            "3. Midnight Black (Gümüş & Beyaz)",
-            "4. Coral Blue (Okyanus & Turkuaz)",
-            "5. Rose Pink (Pembe & Rose Gold)",
-            "--- STOK STİK DUVAR KAĞITLARINI UYGULA ---",
-            "📷 S8 Orijinal Midnight Siyah (Static AMOLED)",
-            "📷 S8 Orijinal Okyanus Mavi Gradient",
-            "📷 S8 Orijinal Altın Çöl Tonal"
+            "3. Midnight Black (Derin AMOLED Siyahı)",
+            "4. Coral Blue (Okyanus Mavi)",
+            "5. Rose Pink (Nar Çiçeği Pembe)",
+            "--- S8 ORIJINAL STOK DUVAR KAĞITLARI (Statik) ---",
+            "📷 S8 Orijinal Midnight Black Gradient",
+            "📷 S8 Orijinal Coral Blue Gradient",
+            "📷 S8 Orijinal Maple Gold Gradient",
+            "📷 S8 Orijinal Orchid Purple Gradient"
         };
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, menuItems);
@@ -47,13 +48,11 @@ public class SettingsActivity extends Activity {
             SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
             if (position >= 1 && position <= 5) {
-                // Canlı Temayı Güncelle
                 int themeIndex = position - 1;
                 prefs.edit().putInt(KEY_THEME, themeIndex).apply();
-                Toast.makeText(this, "Canlı Tema Değiştirildi! Ana ekrana dönün.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Canlı Infinity Teması Değiştirildi!", Toast.LENGTH_SHORT).show();
                 finish();
             } else if (position >= 7) {
-                // Stok Sabit Görsel Oluştur ve Uygula
                 applyStaticWallpaper(position - 7);
             }
         });
@@ -69,24 +68,24 @@ public class SettingsActivity extends Activity {
         Canvas canvas = new Canvas(bitmap);
 
         Paint paint = new Paint();
+        Shader shader;
 
-        if (type == 0) {
-            // Midnight Black Gradient
-            Shader shader = new LinearGradient(0, 0, 0, height,
-                    Color.parseColor("#0A0E1A"), Color.parseColor("#000000"), Shader.TileMode.CLAMP);
-            paint.setShader(shader);
-        } else if (type == 1) {
-            // Coral Blue Gradient
-            Shader shader = new LinearGradient(0, 0, 0, height,
-                    Color.parseColor("#003973"), Color.parseColor("#E5E5BE"), Shader.TileMode.CLAMP);
-            paint.setShader(shader);
-        } else if (type == 2) {
-            // Gold Gradient
-            Shader shader = new LinearGradient(0, 0, 0, height,
-                    Color.parseColor("#282800"), Color.parseColor("#0A0A00"), Shader.TileMode.CLAMP);
-            paint.setShader(shader);
+        switch (type) {
+            case 0: // Midnight Black
+                shader = new LinearGradient(0, 0, 0, height, Color.parseColor("#050508"), Color.parseColor("#181920"), Shader.TileMode.CLAMP);
+                break;
+            case 1: // Coral Blue
+                shader = new LinearGradient(0, 0, 0, height, Color.parseColor("#0A1B2A"), Color.parseColor("#1A3B5C"), Shader.TileMode.CLAMP);
+                break;
+            case 2: // Maple Gold
+                shader = new LinearGradient(0, 0, 0, height, Color.parseColor("#1D180C"), Color.parseColor("#4A3B18"), Shader.TileMode.CLAMP);
+                break;
+            default: // Orchid Purple
+                shader = new LinearGradient(0, 0, 0, height, Color.parseColor("#1B1A2C"), Color.parseColor("#483D59"), Shader.TileMode.CLAMP);
+                break;
         }
 
+        paint.setShader(shader);
         canvas.drawRect(0, 0, width, height, paint);
 
         try {
